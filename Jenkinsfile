@@ -35,7 +35,7 @@ pipeline {
                 echo 'Running Spring Boot application'
                 bat '''
                 docker rm -f myjavaspringproj-container 2>nul || exit 0
-                docker run -d -p 8080:8080 --name myjavaspringproj-container myjavaspringproj:1.0
+                docker run -d --name myjavaspringproj-container myjavaspringproj:1.0
                 '''
             }
         }
