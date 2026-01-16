@@ -1,60 +1,52 @@
 pipeline {
-  agent any
-  tools {
-    jdk 'Java17'
-    maven 'Maven'
-  }
-  stages {
-    stage('Checkout Code') {
-      steps {
-        echo 'Pulling from Github'
-        git branch: 'main', credentialsId: 'Git-cred', url: 'https://github.com/Tpawar25/JENKIN_SPRING_TEST.git'
-      }
-    }
-//     stage('Test Code') {
-//       steps {
-//         echo 'JUNIT Test case execution started'
-//         bat 'mvn clean test'
-//
-//       }
-//       post {
-//         always {
-// 		  junit '**/target/surefire-reports/*.xml'
-//           echo 'Test Run is SUCCESSFUL!'
-//         }
-//
-//       }
-    }
-    stage('Build Project') {
-      steps {
-        echo 'Building Sring-Boot project'
-        bat 'mvn clean package -DskipTests'
-      }
-    }
-    stage('Build the Docker Image') {
-      steps {
-        echo 'Building Docker Image'
-        bat 'docker build -t myjavaspringproj:1.0 .'
-      }
+    agent any
+
+    tools {
+        jdk 'Java17'
+        maven 'Maven'
     }
 
-    stage('Run Docker Container') {
-      steps {
-        echo 'Running Java Application'
-        bat '''
-        docker rm -f myjavaspringproj-container || exit 0
-        docker run --name myjavaspringproj-container myjavaspringproj:1.0
+    stages {
 
-        '''
-      }
+        stage('Checkout Code') {
+            steps {
+                echo 'Pulling from GitHub'
+                git branch: 'main',  credentialsId: 'Git-cred',
+                    url: 'https://github.com/Tpawar25/JENKIN_SPRING_TEST.git'
+            }
+        }
+
+        stage('Build Spring Boot Project') {
+            steps {
+                echo 'Building Spring Boot project'
+                bat 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker Image'
+                bat 'docker build -t myjavaspringproj:1.0 .'
+            }
+        }
+
+        stage('Run Spring Boot Application') {
+            steps {
+                echo 'Running Spring Boot application'
+                bat '''
+                docker rm -f myjavaspringproj-container 2>nul || exit 0
+                docker run -d -p 8080:8080 --name myjavaspringproj-container myjavaspringproj:1.0
+                '''
+            }
+        }
     }
-  }
-  post {
-    success {
-      echo 'BUild and Run is SUCCESSFUL!'
+
+    post {
+        success {
+            echo 'Build and Run SUCCESSFUL!'
+        }
+        failure {
+            echo 'Failure!'
+        }
     }
-    failure {
-      echo 'OOPS!!! Failure.'
-    }
-  }
 }
